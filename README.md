@@ -44,19 +44,19 @@
 ## 项目截图
 
 ### 悬浮按钮
-![alt text](floating-button.png)
+![alt text](assets/floating-button.png)
 
 ### 悬浮面板
-![alt text](floating-panel.png)
+![alt text](assets/floating-panel.png)
 
 ### 复制成功
-![alt text](copy.png)
+![alt text](assets/copy.png)
 
 ### 追问
-![alt text](answer.png)
+![alt text](assets/answer.png)
 
 ### 回答
-![alt text](feedback.png)
+![alt text](assets/feedback.png)
 
 ---
 
