@@ -1,4 +1,4 @@
 #！/bin/bash
-source .venv/bin/activate
+cd ~/ai-solver
 uvicorn app:app --reload
 

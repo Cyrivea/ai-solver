@@ -15,6 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
 import os
 from dotenv import load_dotenv
 
@@ -56,5 +59,6 @@ def index():
     return {"message": "小助后端运行中"}
 
 def save_history(question, answer):
-    with open("history.md", "a") as f:
+    history_path = os.path.join(BASE_DIR, "data", "history.md")
+    with open(history_path, "a", encoding="utf-8") as f:
         f.write(f"## 问题\n{question}\n\n## 答案\n{answer}\n\n---\n\n")

@@ -323,3 +323,190 @@ int main() {
 
 ---
 
+## 问题
+题目列表/P1012
+cyrivea
+个人中心
+用户设置
+练习情况
+我的题库
+我的专栏
+收藏夹
+我的工单
+
+锁定登出
+P1012 [NOIP 1998 提高组] 拼数
+
+时间限制: 1.00s    内存限制: 128.00MB
+
+ 复制 Markdown
+ 中文
+ 退出 IDE 模式
+
+题目描述
+
+设有 n 个正整数 a
+1
+	​
+
+…a
+n
+	​
+
+，请将它们连接成一排，相邻数字首尾相接，组成一个最大的整数。
+
+输入格式
+
+第一行有一个整数，表示数字个数 n。
+
+第二行有 n 个整数，表示给出的 n 个整数 a
+i
+	​
+
+。
+
+输出格式
+
+一个正整数，表示最大的整数。
+
+输入输出样例
+
+输入 #1
+复制
+运行
+
+3
+13 312 343
+
+
+输出 #1
+复制
+运行
+
+34331213
+
+
+输入 #2
+复制
+运行
+
+4
+7 13 4 246
+
+输出 #2
+复制
+运行
+
+7424613
+说明/提示
+
+对于全部的测试点，保证 1≤n≤20，1≤a
+i
+	​
+
+≤10
+9
+。
+
+NOIP1998 提高组 第二题
+
+代码
+自测
+C
+O2
+提交
+1
+
+
+输入
+运行
+输出
+加入题单
+操作
+加入做题计划
+加入个人题单
+加入团队题单
+保存
+复制题目
+目标团队
+获取团队中...
+保存
+召唤小助
+
+## 答案
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+bool compare(const string& a, const string& b) {
+    return a + b > b + a;
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> numbers(n);
+    for (int i = 0; i < n; ++i) {
+        cin >> numbers[i];
+    }
+    sort(numbers.begin(), numbers.end(), compare);
+    string result = "";
+    for (int i = 0; i < n; ++i) {
+        result += numbers[i];
+    }
+    cout << result;
+    return 0;
+}
+```
+
+---
+
+## 问题
+用c语言作答
+
+## 答案
+```c
+#include <stdio.h>
+#include <string.h>
+
+int compare(const char *a, const char *b) {
+    return (strcmp(a + strlen(b), b + strlen(a)) > 0) ? 1 : -1;
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    char numbers[n][11]; // 假设每个数字不超过10位，额外一个字符用于存储'\0'
+    
+    for (int i = 0; i < n; ++i) {
+        scanf("%s", numbers[i]);
+    }
+    
+    // 对字符串数组进行排序
+    char temp[11];
+    for (int i = 0; i < n - 1; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            if (compare(numbers[i], numbers[j]) < 0) {
+                strcpy(temp, numbers[i]);
+                strcpy(numbers[i], numbers[j]);
+                strcpy(numbers[j], temp);
+            }
+        }
+    }
+    
+    // 将排序后的数字拼接成一个字符串
+    char result[101]; // 最坏情况下，所有数字拼接后不超过100位
+    result[0] = '\0';
+    for (int i = 0; i < n; ++i) {
+        strcat(result, numbers[i]);
+    }
+    
+    // 输出结果
+    printf("%s\n", result);
+    
+    return 0;
+}
+```
+
+---
+
