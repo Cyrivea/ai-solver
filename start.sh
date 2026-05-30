@@ -1,4 +1,4 @@
 #！/bin/bash
-cd ~/ai-solver
+cd ~/autocoder
 uvicorn app:app --reload
 
