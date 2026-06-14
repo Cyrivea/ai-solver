@@ -77,6 +77,10 @@
         };
     }
 
+    function stripFences(s) {
+        return s.replace(/```cpp|```/g, "").trim();
+    }
+
     function sendToAI(text, isFollowUp = false) {
         let askBtn = document.getElementById('ask-btn');
         if (isFollowUp && askBtn) askBtn.innerText = "...";
@@ -87,94 +91,87 @@
             showPanel("🚀 正在建立本地安全自检通道...");
         }
 
-        let seenLength = 0;
-        let leftover = "";
+        // 本次请求的流式状态。base 为本次输出之前已有的内容（追问时保留历史），
+        // log 为流式过程中实时累加的内容（状态/报错/代码片段），
+        // final 到达时用清洗后的纯代码替换 log 部分。
+        let baseValue = "";
+        if (isFollowUp) {
+            let ta = document.getElementById('ai-code-text');
+            baseValue = (ta ? ta.value : "") + '\n\n--- 追问解答 ---\n\n';
+        }
+
+        let ctx = {
+            seenLength: 0,
+            leftover: "",
+            base: baseValue,
+            log: "",
+            finalized: false
+        };
+
+        // status / code_stream / error / final 四类事件的统一处理，
+        // onprogress 与 onload 共用，避免两套逻辑走偏。
+        function handleEvent(data, ta) {
+            if (ctx.finalized) return;
+            if (data.type === 'status' || data.type === 'error') {
+                ctx.log += "\n" + data.content + "\n";
+            } else if (data.type === 'code_stream') {
+                ctx.log += data.content;
+            } else if (data.type === 'final') {
+                ctx.finalized = true;
+                ta.value = ctx.base + stripFences(data.content);
+                ta.scrollTop = ta.scrollHeight;
+                return;
+            } else {
+                return;
+            }
+            ta.value = ctx.base + ctx.log;
+            ta.scrollTop = ta.scrollHeight;
+        }
+
+        // 增量解析 SSE。flush=true 时（onload 收尾）把残余缓冲也一并解析。
+        function processChunk(rawText, flush) {
+            let ta = document.getElementById('ai-code-text');
+            if (!ta) return;
+
+            ctx.leftover += rawText.substring(ctx.seenLength);
+            ctx.seenLength = rawText.length;
+
+            let parts = ctx.leftover.split("\n\n");
+            ctx.leftover = flush ? "" : parts.pop();
+
+            for (let line of parts) {
+                line = line.trim();
+                if (!line.startsWith("data:")) continue;
+                try {
+                    handleEvent(JSON.parse(line.slice(line.indexOf(":") + 1).trim()), ta);
+                } catch (e) {
+                    console.warn("SSE parse error:", e, "| line:", line);
+                }
+            }
+        }
 
         GM_xmlhttpRequest({
             method: "POST",
             url: "http://127.0.0.1:8000/solve",
             headers: { "Content-Type": "application/json" },
-            // 注意：不加 responseType，让油猴默认处理
+            // 注意：不加 responseType，让油猴默认处理，保证 responseText 持续可读
             data: JSON.stringify({
                 question: text,
                 system_prompt: currentPrompt
             }),
             onprogress: function(response) {
-                let rawText = response.responseText || "";
-                if (!rawText) return;
-
-                let ta = document.getElementById('ai-code-text');
-                if (!ta) return;
-
-                let newText = rawText.substring(seenLength);
-                seenLength = rawText.length;
-
-                let toParse = leftover + newText;
-                let parts = toParse.split("\n\n");
-                leftover = parts.pop();
-
-                for (let line of parts) {
-                    line = line.trim();
-                    if (!line.startsWith("data: ")) continue;
-                    try {
-                        let data = JSON.parse(line.slice(6).trim());
-
-                        if (data.type === 'status') {
-                            ta.value += "\n" + data.content + "\n";
-                            ta.scrollTop = ta.scrollHeight;
-                        } else if (data.type === 'code_stream') {
-                            ta.value += data.content;
-                            ta.scrollTop = ta.scrollHeight;
-                        } else if (data.type === 'error') {
-                            ta.value += "\n" + data.content + "\n";
-                            ta.scrollTop = ta.scrollHeight;
-                        } else if (data.type === 'final') {
-                            let cleanCode = data.content.replace(/```cpp|```/g, "").trim();
-                            if (!isFollowUp) {
-                                ta.value = cleanCode;
-                            } else {
-                                ta.value += '\n\n--- 追问解答 ---\n\n' + cleanCode;
-                            }
-                            ta.scrollTop = ta.scrollHeight;
-                        }
-                    } catch(e) {
-                        console.warn("SSE parse error:", e, "| line:", line);
-                    }
-                }
+                processChunk(response.responseText || "", false);
             },
             onload: function(response) {
-                // onprogress 没触发时的保底：在 onload 里解析全量数据
-                let ta = document.getElementById('ai-code-text');
-                if (ta) {
-                    let rawText = response.responseText || "";
-                    let lines = rawText.substring(seenLength).split("\n\n");
-                    for (let line of lines) {
-                        line = line.trim();
-                        if (!line.startsWith("data: ")) continue;
-                        try {
-                            let data = JSON.parse(line.slice(6).trim());
-                            if (data.type === 'status' || data.type === 'error') {
-                                ta.value += "\n" + data.content + "\n";
-                            } else if (data.type === 'code_stream') {
-                                ta.value += data.content;
-                            } else if (data.type === 'final') {
-                                let cleanCode = data.content.replace(/```cpp|```/g, "").trim();
-                                if (!isFollowUp) {
-                                    ta.value = cleanCode;
-                                } else {
-                                    ta.value += '\n\n--- 追问解答 ---\n\n' + cleanCode;
-                                }
-                            }
-                        } catch(e) {}
-                    }
-                    ta.scrollTop = ta.scrollHeight;
-                }
+                // onprogress 不可靠时的保底：在 onload 里把全量数据补齐解析
+                processChunk(response.responseText || "", true);
                 document.getElementById('ai-helper-btn').innerText = "召唤小助";
                 if (askBtn) askBtn.innerText = "发送";
             },
             onerror: function() {
                 alert("后端连接失败！");
                 document.getElementById('ai-helper-btn').innerText = "召唤小助";
+                if (askBtn) askBtn.innerText = "发送";
             }
         });
     }

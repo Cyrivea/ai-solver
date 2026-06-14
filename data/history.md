@@ -2741,3 +2741,359 @@ int main() {
 
 ---
 
+## 问题
+题目列表/P12349
+登录
+注册
+P12349 [蓝桥杯 2025 省 B 第二场] 翻转硬币
+登录后才可提交
+提交
+3.59k
+通过
+781
+时间限制
+1.00s
+内存限制
+512.00MB
+题目编号
+P12349
+提供者
+chen_zhe
+难度
+普及+/提高
+ 提交记录    查看题解    题目反馈
+标签
+蓝桥杯省赛
+2025
+显示算法标签
+相关讨论
+进入讨论版
+查看讨论
+推荐题目
+暂无
+ 洛谷推荐
+
+ 复制 Markdown
+ 展开
+ 进入 IDE 模式
+
+题目描述
+
+给定 n 行 m 列共 n×m 个硬币，对于任意一个硬币，我们将其价值视为与其相邻（指上、下、左、右相邻）的硬币中与其正反相同的硬币数的平方。
+
+你可以进行任意次操作，每次可以选择任意一行并将该行的硬币全部翻转。
+
+求所有硬币的价值之和最大可能是多少。
+
+输入格式
+
+输入的第一行包含两个正整数 n,m，用一个空格分隔。
+
+接下来 n 行，每行包含 m 个 0 或 1，表示给定的 n×m 个硬币。
+
+输出格式
+
+输出一行包含一个整数表示答案。
+
+输入输出样例
+
+输入 #1
+复制
+
+4 4
+1010
+1111
+1011
+1100
+
+输出 #1
+复制
+
+68
+说明/提示
+样例说明
+
+如图，实线表示正面，虚线表示反面，翻转最后一行可以得到最大价值和：
+
+评测用例规模与约定
+对于 30% 的评测用例，n,m≤20；
+对于所有评测用例，1≤n,m≤1000。
+在洛谷，
+享受 Coding 的欢乐
+
+关于洛谷 | 帮助中心 | 用户协议 | 联系我们
+小黑屋 | 陶片放逐 | 社区规则
+
+Developed by the Luogu Dev Team.
+© 2013-2026 洛谷. All rights reserved.
+增值电信业务经营许可证 沪B2-20200477
+沪ICP备18008322号
+
+加入题单
+操作
+加入做题计划
+加入个人题单
+加入团队题单
+保存
+复制题目
+目标团队
+获取团队中...
+保存
+召唤小助
+
+## 答案
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+    vector<vector<int>> grid(n, vector<int>(m));
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            cin >> grid[i][j];
+        }
+    }
+    
+    int ans = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            int count = 0;
+            // Check all four directions
+            if (i > 0 && grid[i - 1][j] == grid[i][j]) count++;
+            if (i < n - 1 && grid[i + 1][j] == grid[i][j]) count++;
+            if (j > 0 && grid[i][j - 1] == grid[i][j]) count++;
+            if (j < m - 1 && grid[i][j + 1] == grid[i][j]) count++;
+            ans += count * count;
+        }
+    }
+    
+    cout << ans << endl;
+    return 0;
+}
+```
+
+---
+
+## 问题
+重新生成
+
+## 答案
+The error messages suggest that the code is being compiled as C++ instead of Python. The lines indicating "empty character constant" and "#Example" are not valid in Python. The line "python" at the top of the code is also incorrect, as it should be the shebang line for a Python script, which is `#!/usr/bin/env python3`.
+
+Here's the corrected Python code:
+
+```python
+import random
+
+def generate_random_password(length):
+    if length < 8:
+        raise ValueError("Password length must be at least 8 characters.")
+    characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-="
+    password = ''.join(random.choice(characters) for i in range(length))
+    return password
+
+# Example usage:
+password_length = 12
+print(generate_random_password(password_length))
+```
+
+---
+
+## 问题
+读入两个整数a b，输出a+b
+
+## 答案
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+```
+
+---
+
+## 问题
+题目列表/P1918
+登录
+注册
+P1918 保龄球
+登录后才可提交
+提交
+104.36k
+通过
+43.38k
+时间限制
+1.00s
+内存限制
+125.00MB
+题目编号
+P1918
+提供者
+lyx613
+难度
+普及−
+ 提交记录    查看题解    题目反馈
+标签
+显示算法标签
+相关讨论
+进入讨论版
+查看讨论
+推荐题目
+查看推荐
+
+ 复制 Markdown
+ 中文
+ 展开
+ 进入 IDE 模式
+
+题目描述
+
+DL 算缘分算得很烦闷，所以常常到体育馆去打保龄球解闷。因为他保龄球已经打了几十年了，所以技术上不成问题，于是他就想玩点新花招。
+
+DL 的视力真的很不错，竟然能够数清楚在他前方十米左右每个位置的瓶子的数量。他突然发现这是一个炫耀自己好视力的借口——他看清远方瓶子的个数后从某个位置发球，这样就能打倒一定数量的瓶子。
+
+◯◯◯
+
+◯◯◯ ◯
+
+◯
+
+◯ ◯
+
+如上图，每个 “◯” 代表一个瓶子。如果 DL 想要打倒 3 个瓶子就在 1 位置发球，想要打倒 4 个瓶子就在 2 位置发球。
+
+现在他想要打倒 m 个瓶子。他告诉你每个位置的瓶子数，请你给他一个发球位置。
+
+输入格式
+
+第一行包含一个正整数 n，表示位置数。
+
+第二行包含 n 个正整数 a
+i
+	​
+
+ ，表示第 i 个位置的瓶子数，保证各个位置的瓶子数不同。
+
+第三行包含一个正整数 Q，表示 DL 发球的次数。
+
+第四行至文件末尾，每行包含一个正整数 m，表示 DL 需要打倒 m 个瓶子。
+
+输出格式
+
+共 Q 行。每行包含一个整数，第 i 行的整数表示 DL 第 i 次的发球位置。若无解，则输出 0。
+
+输入输出样例
+
+输入 #1
+复制
+
+5
+1 2 4 3 5
+2
+4
+7
+
+
+输出 #1
+复制
+
+3
+0
+
+说明/提示
+
+【数据范围】
+
+对于 50% 的数据，1≤n,Q≤1000,1≤a
+i
+	​
+
+,m≤10
+5
+。
+
+对于 100% 的数据，1≤n,Q≤100000,1≤a
+i
+	​
+
+,m≤10
+9
+。
+
+在洛谷，
+享受 Coding 的欢乐
+
+关于洛谷 | 帮助中心 | 用户协议 | 联系我们
+小黑屋 | 陶片放逐 | 社区规则
+
+Developed by the Luogu Dev Team.
+© 2013-2026 洛谷. All rights reserved.
+增值电信业务经营许可
+
+## 答案
+```python
+n = int(input())
+a = list(map(int, input().split()))
+Q = int(input())
+
+# 将瓶子数和位置对应起来，并按瓶子数排序
+positions = sorted((num, idx + 1) for idx, num in enumerate(a))
+
+# 保存已经打过的瓶子数
+hit = [0] * n
+
+# 处理每次请求
+results = []
+for _ in range(Q):
+    m = int(input())
+    found = False
+    for num, pos in positions:
+        if num <= m and hit[pos - 1] == 0:
+            hit[pos - 1] = 1
+            results.append(pos)
+            found = True
+            break
+    if not found:
+        results.append(0)
+
+# 输出结果
+for result in results:
+    print(result)
+```
+
+---
+
+## 问题
+用c语言作答
+
+## 答案
+```c
+#include <stdio.h>
+#include <cstdio>
+
+int main() {
+    int a, b, sum;
+
+    // Prompt user for input
+    printf("Enter two integers: ");
+    scanf("%d %d", &a, &b);
+
+    // Calculate sum
+    sum = a + b;
+
+    // Display the result
+    printf("The sum of %d and %d is %d\n", a, b, sum);
+
+    return 0;
+}
+```
+
+---
+

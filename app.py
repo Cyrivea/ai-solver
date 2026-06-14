@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
-from openai import AsyncOpenAI  # 关键：切换为异步 SDK
+from openai import AsyncOpenAI 
 
 app = FastAPI()
 
@@ -21,7 +21,7 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-# 使用 AsyncOpenAI 替代标准的 OpenAI
+
 client = AsyncOpenAI(
     api_key=os.getenv("API_KEY"),
     base_url="https://open.bigmodel.cn/api/paas/v4/"
@@ -31,7 +31,7 @@ class QuestionModel(BaseModel):
     question: str
     system_prompt: str = None 
 
-# 本地编译自检函数保持高效
+
 def check_cpp_compilation(code: str) -> tuple[bool, str]:
     cpp_file = os.path.join(BASE_DIR, "temp.cpp")
     out_file = os.path.join(BASE_DIR, "temp.out")
@@ -57,7 +57,7 @@ def check_cpp_compilation(code: str) -> tuple[bool, str]:
         if os.path.exists(cpp_file): os.remove(cpp_file)
         return False, str(e)
 
-# 完美的非阻塞流式生成器
+
 async def self_check_generator(question: str, system_prompt: str):
     default_system = (
         "你是一个 C++ 编程大神。请直接给出题目的 C++ 完整代码解答。\n"
@@ -76,23 +76,23 @@ async def self_check_generator(question: str, system_prompt: str):
     for attempt in range(max_retries):
         status_msg = f"🔄 正在进行第 {attempt + 1} 次代码生成与自检..." if attempt == 0 else f"🔄 正在进行第 {attempt + 1} 次自我修复与重试..."
         yield f"data: {json.dumps({'type': 'status', 'content': status_msg})}\n\n"
-        await asyncio.sleep(0.05) # 极短暂停确保推送到网络
+        await asyncio.sleep(0.05) 
         
         full_answer = ""
         try:
-            # 关键：使用 await 异步调用并开启 stream=True
+   
             response = await client.chat.completions.create(
                 model="glm-4-flash",
                 messages=local_messages,
                 stream=True
             )
             
-            # 实时流式读取大模型吐出来的每个字
+         
             async for chunk in response:
                 if chunk.choices and chunk.choices[0].delta.content:
                     content_piece = chunk.choices[0].delta.content
                     full_answer += content_piece
-                    # 如果你想在自检时连带看大模型打字的过程，可以把下面这行取消注释：
+                    
                     yield f"data: {json.dumps({'type': 'code_stream', 'content': content_piece})}\n\n"
                     
         except Exception as e:
@@ -101,7 +101,7 @@ async def self_check_generator(question: str, system_prompt: str):
 
         clean_code = full_answer.replace("```cpp", "").replace("```", "").strip()
         
-        # 触发本地静态编译自检
+      
         is_valid, compile_error = check_cpp_compilation(clean_code)
         
         if is_valid:
@@ -110,18 +110,18 @@ async def self_check_generator(question: str, system_prompt: str):
             save_history(question, full_answer)
             return
         else:
-            # 如果编译失败，立刻将错误输出到前端展示
+         
             yield f"data: {json.dumps({'type': 'error', 'content': f'❌ 第 {attempt + 1} 次编译错误：\n{compile_error}'})}\n\n"
             await asyncio.sleep(0.1)
             
-            # 将垃圾代码和错误推入上下文
+       
             local_messages.append({'role': 'assistant', 'content': full_answer})
             local_messages.append({
                 'role': 'user', 
                 'content': f"你刚才生成的代码在编译时报错了。错误信息如下，请参考并给出修复后的完整代码，同样不需要任何注释：\n```\n{compile_error}\n```"
             })
             
-    # 如果达到最大重试次数依然没过，保底输出最后一版代码
+
     yield f"data: {json.dumps({'type': 'status', 'content': '⚠️ 已达到最大自检次数，输出最后一版候选项。'})}\n\n"
     yield f"data: {json.dumps({'type': 'final', 'content': full_answer})}\n\n"
     save_history(question, full_answer)
